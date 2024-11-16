@@ -40,9 +40,9 @@ levels(bats$type)
 
 all the levels look good, no entry mistakes that need to be fixed.
 
-## Numerical Error Checking
+## Checking for numberical errors and outliers in the data
 
-Checking for errors in the numerical data entry or extreme outliers to be aware of going forward.
+Checking for errors in the numerical data entry or extreme outliers to be aware of going forward.If outliers are present the decision will be made weather to keep them or exclude them from the analysis. 
 
 mass_g
 
@@ -242,6 +242,7 @@ Plotting the results to better show difference between two groups
 ggplot(bats, aes(tick_num, sex))+
   geom_boxplot()+
   geom_jitter(color = 'lightblue')+
+  labs(x="Number of Ticks", y= "Sex")+
   theme_bw()
  
 ```
@@ -282,6 +283,7 @@ Plotting the results to better show difference between two groups
 ggplot(bats, aes(tick_num, age))+
   geom_boxplot()+
   geom_jitter(color = 'lightblue')+
+  labs(x = "Number of Ticks", y= "Age")+
   theme_bw()
  
 ```
@@ -290,6 +292,7 @@ Graph shows that the points look almost randomly distributed and helps to visual
 
 ## D: Regression
 Disregarding species, is there a relationship in bats between tail length and body length?
+NULL hypothesis: There is no significant relationship between the body length and the tail length of the bats regardless of species. 
 
 plotting the data to get a better sense for it and predict the outcomes. 
 I am going to make the body length the predictor variable even though either could be used as the predictor or the response variable for the purpose of this analysis. 
@@ -329,6 +332,7 @@ Making a better visualization of the results
 ggplot(bats, aes(body_length_mm,tail_length_mm))+
   geom_point()+
   geom_smooth(model = 'lm')+
+  labs(x= "Body Length (mm)", y= "Tail Length (mm)")+
   theme_bw()
 ```
 
