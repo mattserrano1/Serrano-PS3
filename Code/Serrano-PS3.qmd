@@ -322,8 +322,17 @@ Now summary to get some more info
 ```{r}
 summary(model_regression)
 ```
-Here we can check our estimated slope of 0.5 and estimated intercept of 15. Our slope was very close with the acutal slope being 0.61 however we were off on out esitmate of the intercept with the real value being -14. 
+Here we can check our estimated slope of 0.5 and estimated intercept of 15. Our slope was very close with the actual slope being 0.61 however we were off on out estimate of the intercept with the real value being -14. This was because I did not account for the higher x axis value close to the y axis when esitmating the y intercept. 
 
+Making a better visualization of the results
+```{r}
+ggplot(bats, aes(body_length_mm,tail_length_mm))+
+  geom_point()+
+  geom_smooth(model = 'lm')+
+  theme_bw()
+```
+
+There is a significant positive relationship between the body length and the tail length of bats regardless of species (t = -6.844, df = 1, p < 3.22e-10)
 
 
 
