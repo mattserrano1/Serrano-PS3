@@ -291,11 +291,38 @@ Graph shows that the points look almost randomly distributed and helps to visual
 ## D: Regression
 Disregarding species, is there a relationship in bats between tail length and body length?
 
+plotting the data to get a better sense for it and predict the outcomes. 
+I am going to make the body length the predictor variable even though either could be used as the predictor or the response variable for the purpose of this analysis. 
+```{r}
+ggplot(bats, aes(body_length_mm, tail_length_mm))+
+  geom_point()+
+  theme_bw()
+```
 
+It appears that there is a positive relationship between body length and the tail length of bats regardless of species. The slope of this relationship could be estimated to be about 0.5 and the y intercept is roughly 20.
 
+Making a linear model of the data
+```{r}
+model_regression <- lm(tail_length_mm ~ body_length_mm, data = bats)
+```
 
+Visualizing the model to check that assumptions made by the statistical test are correct. 
+```{r}
+autoplot(model_regression)
+```
+The line of the residuals vs fitted graph is relatively straight so the linear model is a good choice. The Q-Q graphs shows that the data fits the line of best fit menaing the data has a normal distribution. The data looks evenly distributed in the Scale-Location graph which is good. The Residuals vs Leverage graph has two points with higher leverage on the data but since we have already checked the data for outliers and are happy with the current data set they are acceptable. 
 
+Running other tests anova() and summary() to get more information and make some infrences about the data. 
+```{r}
+anova(model_regression)
+```
+We can see that there is a very strong relationship, which we believe is positive as a result of our scatter plot, between the body length and the tail length of bats regardless of species (F, 1 = 1037.2, p <2.2e-16). 
 
+Now summary to get some more info
+```{r}
+summary(model_regression)
+```
+Here we can check our estimated slope of 0.5 and estimated intercept of 15. Our slope was very close with the acutal slope being 0.61 however we were off on out esitmate of the intercept with the real value being -14. 
 
 
 
