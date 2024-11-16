@@ -1,0 +1,335 @@
+---
+title: "Serrano-PS3"
+format: html
+editor: visual
+---
+
+## Setting up
+
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(multcomp)
+library(ggfortify)
+library(emmeans)
+```
+
+Loading data into R
+
+```{r}
+bats <- read.csv(here("Data", "bat_data.csv"))
+glimpse(bats)
+```
+## Changing data types
+
+Some of the character data rows, common_names, age, sex and type, need to be changed to factor data for analysis. Not going to change Species since I will use common_name and they represent the same data. All the numeric data types seem good. Changing character data to factor data
+
+```{r}
+bats$common_name <- as.factor(bats$common_name)
+levels(bats$common_name)
+bats$age <- as.factor(bats$age)
+levels(bats$age)
+bats$sex <- as.factor(bats$sex)
+levels(bats$sex)
+bats$type <- as.factor(bats$type)
+levels(bats$type)
+
+```
+
+all the levels look good, no entry mistakes that need to be fixed.
+
+## Numerical Error Checking
+
+Checking for errors in the numerical data entry or extreme outliers to be aware of going forward.
+
+mass_g
+
+```{r}
+ggplot(bats, aes(mass_g))+
+  geom_histogram()+
+  theme_bw()
+```
+
+distribution might seem kind of weird but considering there are 5 species of bats the five peaks makes sense.
+
+tick_num
+
+```{r}
+ggplot(bats, aes(tick_num))+
+  geom_histogram()+
+  theme_bw()
+```
+
+Distribution looks normal without any weight to either side and no large outliers. 
+
+body_length_mm
+```{r}
+ggplot(bats, aes(body_length_mm))+
+  geom_histogram()+
+  theme_bw()
+```
+Looks normal nothing to worry about 
+
+tail_length_mm
+```{r}
+ggplot(bats, aes(tail_length_mm))+
+  geom_histogram()+
+  theme_bw()
+```
+While there are some odd looking peaks again the categorical nature of the bat species could explain this clumped variation. All good. 
+
+## A: One-Way ANOVA
+Does body mass differ between these five species of bats and, if so, how does body
+mass differ between the species?
+
+Making a boxplot to look at the means and get a feel for the expected results so we have a good idea of if statistical tests were done correctly. 
+```{r}
+ggplot(bats, aes(common_name, mass_g))+
+  geom_boxplot()+
+  theme_bw()
+```
+Based on the boxplot I would say there are a significant difference.
+Degrees of Freedom - 4
+Estimates of Means
+Big Brown Bat - 21 points
+Eastern Pipistrelle - 7.5
+Hoary Bat - 27
+Little Brown Bat - 10 
+Silver-Haired Bat - 14.8
+
+Making a model 
+```{r}
+model_mass <- lm(mass_g ~ common_name, data = bats)
+```
+
+Plotting model_mass to check to make sure statistical assumptions are correct. 
+```{r}
+autoplot(model_mass)
+```
+
+The data all looks pretty good. The line is straight in the Residuals vs Fitted model indicating a linear model works for this data. There is no significant pattern to the data in the Scale-Location when you account for the five different groups. Lastly the Constant Leverage graph shows that there are not any concerning outliers in the data. The Q-Q test is the only one that might raise some concern but it is only a small handful of values at one end that trail off with any larger degree of note. 
+
+Making inferences with anova() and summary)()
+```{r}
+anova(model_mass)
+```
+
+
+Further functions to make inferences
+```{r}
+summary(model_mass)
+```
+The means look similar to those estimated. 
+
+
+
+There is a statistically significant difference in body mass between the different  species of bats (F 4, 120 = 792.2, p < 2.2e-16). Further 96 percent of the variance in body mass can be explained by the variable of species (Rsq = 0.9635)
+
+
+Since there is a significant difference I performs a post hoc Tukey test to look how body mass differs between species.
+```{r}
+PHC_mass <- glht(model_mass, linfct = mcp(common_name = "Tukey"))
+summary(PHC_mass)
+```
+Making this table easier to understand using the cld() function
+```{r}
+cld(PHC_mass) 
+```
+All variation in the pairwise comparisons of mean body mass between bat species are statistically significant(p < 1e-10). For further information on specific t values between pairwise comparisons see the table resulting from the post hoc Tukey test. For more information please look at the table generated as a result of glht Tukey test and cld function.
+
+In an actual paper I would refrence these tables by their table numbers
+
+In the assignment you ask for a nice model but we have not gone over how to model an anova and after a lot of looking I don't see how I would with what we have covered. I think the cld() model makes a easier to understand figure but are not sure if it is what you were looking for. 
+
+
+
+## B:One-Way ANOVA
+Does body length differ between these five species of bats and, if so, how does body length differ between the species?
+
+Making a boxplot to look at the means and get a feel for the expected results so we have a good idea of if statistical tests were done correctly. 
+```{r}
+ggplot(bats, aes(body_length_mm, common_name))+
+  geom_boxplot()+ 
+  theme_bw()
+```
+Based on the boxplot I would say there are a significant difference between body length of different species although some might not be.
+Degrees of Freedom - 4
+Estimates of Means
+Big Brown Bat - 134
+Eastern Pipistrelle - 83
+Hoary Bat - 148
+Little Brown Bat - 92
+Silver-Haired Bat - 110
+
+making a model
+```{r}
+model_body_length <- lm(body_length_mm ~ common_name, data = bats)
+```
+
+Plotting the model to check assumptions of test. 
+```{r}
+autoplot(model_body_length)
+```
+
+The data looks to have almost a perfect even distribution. No points are having to large an affect, the residuals vs fitted line is straight and the scale location chart looks good. 
+
+running an anova and summary on the model to look at if mean body_length_mm is related to species. 
+```{r}
+anova(model_body_length)
+```
+summary() to get more info
+```{r}
+summary(model_body_length)
+```
+All the means look good 
+
+There is a statistically significant difference in mean body length between the different species of bats (F 4, 120, p=2.2e-16). Additionally 70% the variation in the body length between species can be explained by the difference species. 
+
+Since there is a significant difference between the groups as a whole I am performing a Tukey test to see if there is a significant difference between each type of bat for mean body length.
+```{r}
+PH_body_length <- glht(model_body_length, linfct = mcp(common_name = "Tukey"))
+summary(PH_body_length)
+```
+making the table a bit easier to understand
+```{r}
+cld(PH_body_length)
+```
+There is not a statistical difference between the mean body length of little brown bats and eastern pipistrelle bats (t=2.021, p = 0.26225).There is a statistically significant difference between the mean body length of silver-haired bats and little brown bats (t=3.413, p = 0.00766). There is a statistically significant difference between silver-haired brown bats and big brown bats (t= -3.985, p = 0.00112). There is a greater statistically significant difference between the remaining pairwise comparisons of species for mean body length (p <0.001). For more information please look at the table generated as a result of glht Tukey test. 
+
+In the assignment you ask for a nice model but we have not gone over how to model an anova and after a lot of looking I don't see how I would with what we have covered. I think the cld() model makes a easier to understand figure but are not sure if it is what you were looking for. 
+
+
+
+
+## C: Two sample t-test
+Is the number of ticks found on the bats associated with their sex or age?
+
+
+Sex
+
+NULL hypothesis:
+There is no associating between tick count and sex of the bat. 
+Plotting the data to make esitmates of difference to get a feeling for the data. 
+```{r}
+ggplot(bats, aes(tick_num))+
+  geom_histogram()+
+  facet_wrap(~ sex, ncol = 1)+
+  theme_bw()
+```
+
+Both sexes seem to have a normal distribution. There appears to be some difference with female tick_num centering at 4 per bat and male tick_num centering at 7 per bat. 
+
+calculating mean and standard error to better understand data. 
+```{r}
+sex_stats <- bats |> group_by(sex) |> 
+  summarise(mean_ticks = mean(tick_num),
+            sem_ticks = sd(tick_num)/sqrt(length(tick_num)))
+
+```
+
+The mean for female is 4.4 and the mean for male is 6.3. Both values have low standard error values of 0.11 and 0.13 respectivly signifying that there is likely an association between sex and number of ticks. 
+
+Performing a t test to see if this observed difference exists
+```{r}
+t.test(tick_num ~ sex, data = bats)
+```
+We can reject our Null hypothesis that there is no association between sex and number of ticks. There is a statistically significant association between sex and the number of ticks found on the bats body (t = -10.608, df = 117.45, p < 2.2e-16).
+
+Plotting the results to better show difference between two groups
+```{r}
+ggplot(bats, aes(tick_num, sex))+
+  geom_boxplot()+
+  geom_jitter(color = 'lightblue')+
+  theme_bw()
+ 
+```
+PLot helps to visualize t test results showing how the data points are clustered in two groups split by sex. 
+
+
+AGE
+The NULL hypothesis is that there will not be an association between age and the number of ticks found on a bat. 
+
+Plotting the data to make esitmates of difference to get a feeling for the data. 
+```{r}
+ggplot(bats, aes(tick_num))+
+  geom_histogram()+
+  facet_wrap(~ age, ncol = 1)+
+  theme_bw()
+```
+
+Both ages seem to have a normal looking distribution. There does not appear to be a large difference in the lean of either age to fewer or more ticks, indicating there may not be a significant difference. 
+
+calculating mean and standard error to better understand data. 
+```{r}
+age_stats <- bats |> group_by(age) |> 
+  summarise(mean_ticks = mean(tick_num),
+            sem_ticks = sd(tick_num)/sqrt(length(tick_num)))
+
+```
+
+The mean for adult is 5.47 and the mean for juveniles is 5.08 which indicates there is probably not a significant difference. Further the standard error for adults is 0.16 and for juveniles is 0.17 indicating that there could be a difference. 
+
+Performing a t test to see if this observed difference exists
+```{r}
+t.test(tick_num ~ age, data = bats)
+```
+We can confirm our null hypothesis that there is not an association between the age of a bat and the amount of ticks present (t=1.629, df=122.01 p=0.1509).
+
+Plotting the results to better show difference between two groups
+```{r}
+ggplot(bats, aes(tick_num, age))+
+  geom_boxplot()+
+  geom_jitter(color = 'lightblue')+
+  theme_bw()
+ 
+```
+
+Graph shows that the points look almost randomly distributed and helps to visualise the closeness of the two means in the data. 
+
+## D: Regression
+Disregarding species, is there a relationship in bats between tail length and body length?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
